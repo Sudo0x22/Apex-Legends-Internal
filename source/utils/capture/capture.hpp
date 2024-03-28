@@ -4,20 +4,13 @@
 class Capture
 {
 public:
-	typedef void* (*Interface)();
-	struct Interface_t
-	{
-
-	};
-public:
 	template<typename Type>
-	__inline Type CaptureInterface(LPCSTR szModule, PCCH szObject)
+	__inline Type CaptureInterface(const wchar_t* szModule, char* szObject)
 	{
-		Type buffer = {};
-		if (const auto hModule = GetImage<HMODULE>(szModule))
-		{
-
-		}
-		return buffer;
+		auto hModule = GetImage<uintptr_t>(szModule);
+		if (!hModule) return nullptr;
+		auto hFunction = reinterpret_cast<void*(__cdecl)(const char*, int*)>(GetImageExport(hModule, "CreateInterface"));
+		if (!hFunction) return nullptr;
+		return reinterpret_cast<Type>(hFunction(szObject, nullptr));
 	}
 };
